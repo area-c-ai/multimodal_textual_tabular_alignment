@@ -30,16 +30,10 @@ df_struct_m3 = pd.read_csv(m3_struct_path, low_memory=False)
 df_struct_m4 = pd.read_csv(m4_struct_path, low_memory=False)
 
 # MIMIC-III HADM_IDs that DST is observed
-m3_dst_hadm_ids = [100831, 101280, 103859, 125310, 133706, 145785]
+m3_dst_hadm_ids = [....] # real IDS are masked due to privacy constraints
 
 # MIMIC-IV subject_id to HADM_ID mapping for selected patients
-m4_pt_to_hadm = {
-    10056200: 28143635,
-    12051619: 24799933,
-    13528310: 25054328,
-    14216696: 28837354,
-    16266622: 23933519
-}
+m4_pt_to_hadm = {define own mapping}
 
 # Cache for struct data
 struct_data = collections.defaultdict(collections.defaultdict)
