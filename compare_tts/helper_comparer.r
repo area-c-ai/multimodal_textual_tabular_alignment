@@ -3,11 +3,11 @@ library(stringdist)
 library(reticulate)
 library(TreeDist)
 
-use_condaenv("/opt/anaconda3/envs/Rtest")
+use_condaenv("clinical_annot", required = TRUE)
 if(!exists("script_dir")) {
     script_dir = tryCatch(
         dirname(normalizePath(sys.frame(1)$ofile)),
-        error = function(e) "/Users/kumars33/Desktop/TTA/Textual_tabular_alignment-main/compare_tts/"
+        error = function(e) "/mnt/c/Research/textual-time-series-for-sepsis/compare_tts/"
     )
 }
 source_python(file.path(script_dir,"distance_helper_v2.py"))
@@ -159,7 +159,7 @@ get_match_table_from_dists = function(dists, events1, events2, threshold = 0.6, 
             mutate(
                 error.rate = map2_dbl(rid, cid, ~ dists[.x,.y])
             ) %>% select(v1, v2, error.rate, rid, cid) %>%
-            # The above omits the no-matches, which we want to pass back (with NA's in many columns)
+            # The above omits the no-matches, which we want to pass back (with NA's in many rows)
             bind_rows(
                 tibble(
                     rid = which(is.na(mincost.match$matching)),
@@ -171,7 +171,7 @@ get_match_table_from_dists = function(dists, events1, events2, threshold = 0.6, 
         if(rowids) {
             return(result)
         } else {
-            return(results %>% select(-rid, -cid))
+            return(result %>% select(-rid, -cid))
         }
     } else {
         tbl <- recursive_match(dists) %>% bind_rows()
@@ -211,47 +211,41 @@ get_match_table <- function(events1, events2, threshold = 0.6, method = "lv", us
 
 compute_dist_matrix_featurized = function(sources = c("string_sim"), source_objs = list(NULL), w=c(1)) {
     mats = list()
-    weights = list()
     if("string_sim" %in% sources) {
         si = which(sources=="string_sim")[1]
         source_obj = source_objs[[si]]
         mats = mats %>% append(list(m=compute_dist_matrix(source_obj[["events1"]], source_obj[["events2"]], source_obj[["method"]])))
-        weights = weights %>% append(w[si])
     }
     if("char_pos" %in% sources) {
-        if(w[which(sources=="char_pos")[1]] > 0) { # avoid NA's in char_pos if you have NAs charpos's.
-            si = which(sources=="char_pos")[1]
-            source_obj = source_objs[[si]]
-            
-            dist_fn = source_obj[["dist_fn"]]
-            dists = tibble(
-                pos1 = source_obj[["char_pos1"]],
-                pos1_ub = source_obj[["char_pos1_ub"]]
-            ) %>% 
-            mutate(i1 = 1:n()) %>%
-            crossing(
-                tibble(
-                    pos2 = source_obj[["char_pos2"]],
-                    pos2_ub = source_obj[["char_pos2_ub"]]
-                ) %>%
-                mutate(i2= 1:n())
+        si = which(sources=="char_pos")[1]
+        source_obj = source_objs[[si]]
+        
+        dist_fn = source_obj[["dist_fn"]]
+        dists = tibble(
+            pos1 = source_obj[["char_pos1"]],
+            pos1_ub = source_obj[["char_pos1_ub"]]
+        ) %>% 
+        mutate(i1 = 1:n()) %>%
+        crossing(
+            tibble(
+                pos2 = source_obj[["char_pos2"]],
+                pos2_ub = source_obj[["char_pos2_ub"]]
             ) %>%
-            mutate(min.dist = pmin(pmin(abs(pos1 - pos2), abs(pos1_ub-pos2), na.rm=T),pmin(abs(pos1 - pos2_ub), abs(pos1_ub-pos2_ub), na.rm=T), na.rm=T)) %>%
-            (function(df) Matrix::sparseMatrix(i=df$i1,j=df$i2,x=df$min.dist))(.) %>% as.matrix()        
+            mutate(i2= 1:n())
+        ) %>%
+        mutate(min.dist = pmin(pmin(abs(pos1 - pos2), abs(pos1_ub-pos2), na.rm=T),pmin(abs(pos1 - pos2_ub), abs(pos1_ub-pos2_ub), na.rm=T), na.rm=T)) %>%
+        (function(df) Matrix::sparseMatrix(i=df$i1,j=df$i2,x=df$min.dist))(.) %>% as.matrix()        
 
-            mats = mats %>% append(list(m=dists %>% dist_fn))
-            weights = weights %>% append(w[si])
-            # browser()
-        }
+        mats = mats %>% append(list(m=dists %>% dist_fn))
+        # browser()
     }
 
-    # browser()
     return(
-        map2(mats, weights, ~ .y * .x) %>% Reduce("+",.)
+        map2(mats, w, ~ .y * .x) %>% Reduce("+",.)
     )
 }
 
-get_match_table_wtimes = function(ref.tibble, pilot.tibble, threshold = 0.6, approach="strcmp", approach.w=c(1,0), method = "lv", use_lap=T, rowids=F) {
+get_match_table_wtimes = function(ref.tibble, pilot.tibble, threshold = 0.6, approach="strcmp", method = "lv", use_lap=T, rowids=F) {
     # if(any(str_detect(names(ref.tibble),"char_pos")) & any(str_detect(names(pilot.tibble),"char_pos"))) {
     if(approach == "featurized") { #for now, this means use embedding and character position
         feature_obj = list(
@@ -263,14 +257,10 @@ get_match_table_wtimes = function(ref.tibble, pilot.tibble, threshold = 0.6, app
                 char_pos1_ub = ref.tibble$char_pos_ub,
                 char_pos2 = pilot.tibble$char_pos,
                 char_pos2_ub = pilot.tibble$char_pos_ub,
-                # dist_fn = function(x) { ifelse(is.na(x) | is.infinite(x), 1, ((x > 30) + (x > 100)) / 2)  }
-                dist_fn = function(x) { ifelse(is.na(x) | is.infinite(x), 1., pmin(pmax(0,x-10),500)/500.)  }
+                dist_fn = function(x) { ((x < 10) + (x < 30)) / 2  }
             )
         )
-        # dists = compute_dist_matrix_featurized(sources=c("string_sim","char_pos"), feature_obj, w=c(0.95,0.05))
-        dists = compute_dist_matrix_featurized(sources=c("string_sim","char_pos"), feature_obj, w=approach.w)
-        # dists = compute_dist_matrix_featurized(sources=c("string_sim","char_pos"), feature_obj, w=c(0.85,0.5))
-        # dists = compute_dist_matrix_featurized(sources=c("string_sim","char_pos"), feature_obj, w=c(1,0))
+        dists = compute_dist_matrix_featurized(sources=c("string_sim","char_pos"), feature_obj, w=c(0.95,0.5))
 
         tbl = get_match_table_from_dists(dists=dists,
                                       events1=ref.tibble$referent.events, events2=pilot.tibble$pilot.events,

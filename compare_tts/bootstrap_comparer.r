@@ -80,66 +80,30 @@ read_bootstrap_config <- function(config_path) {
 }
 
 # Find latest best_matches file for each pilot (under <out.folder>/<out.relfolder>/<pilot>/best_matches*.csv)
-# find_latest_match_files <- function(config) {
-#   root <- if (startsWith(config$out$relfolder, "/")) {
-#     config$out$relfolder
-#   } else {
-#     file.path(config$out$folder, config$out$relfolder)
-#   }
+find_latest_match_files <- function(config) {
+  root <- if (startsWith(config$out$relfolder, "/")) {
+    config$out$relfolder
+  } else {
+    file.path(config$out$folder, config$out$relfolder)
+  }
 
-#   files <- map_chr(config$pilot_names, function(pilot) {
-#     pilot_dir <- file.path(root, pilot)
-#     if (!dir.exists(pilot_dir)) {
-#       stop(paste0(
-#         "Pilot match dir not found: ", pilot_dir,
-#         " (did you run the original pipeline to generate best_matches?)"
-#       ))
-#     }
-#     candidates <- list.files(pilot_dir, pattern = "^best_matches.*\\.csv$", full.names = TRUE)
-#     if (length(candidates) == 0) {
-#       stop(paste0("No best_matches*.csv found in ", pilot_dir))
-#     }
-#     candidates[which.max(file.info(candidates)$mtime)]
-#   })
-
-#   names(files) <- config$pilot_names
-#   return(files)
-# }
-
-
-get_match_files <- function(config) {
-  # If user provided explicit match files, use them
-  if (!is.null(config$match_files)) {
-
-    # Case 1: named object (preferred) -> config$match_files$PILOT_NAME
-    if (is.list(config$match_files) && !is.null(names(config$match_files))) {
-      missing_names <- setdiff(config$pilot_names, names(config$match_files))
-      if (length(missing_names) > 0) {
-        stop(paste0(
-          "match_files is missing entries for pilots: ",
-          paste(missing_names, collapse = ", ")
-        ))
-      }
-      files <- unlist(config$match_files[config$pilot_names], use.names = TRUE)
-    } else {
-      # Case 2: plain list/vector aligned with pilot_names
-      files <- unlist(config$match_files, use.names = FALSE)
-      if (length(files) != length(config$pilot_names)) {
-        stop("match_files must have the same length as pilot_names.")
-      }
-      names(files) <- config$pilot_names
-    }
-
-    # Validate files exist
-    bad <- files[!file.exists(files)]
-    if (length(bad) > 0) {
+  files <- map_chr(config$pilot_names, function(pilot) {
+    pilot_dir <- file.path(root, pilot)
+    if (!dir.exists(pilot_dir)) {
       stop(paste0(
-        "These match_files do not exist:\n",
-        paste(paste0(names(bad), ": ", bad), collapse = "\n")
+        "Pilot match dir not found: ", pilot_dir,
+        " (did you run the original pipeline to generate best_matches?)"
       ))
     }
-    return(files)
-  }
+    candidates <- list.files(pilot_dir, pattern = "^best_matches.*\\.csv$", full.names = TRUE)
+    if (length(candidates) == 0) {
+      stop(paste0("No best_matches*.csv found in ", pilot_dir))
+    }
+    candidates[which.max(file.info(candidates)$mtime)]
+  })
+
+  names(files) <- config$pilot_names
+  return(files)
 }
 
 # Compute metrics using YOUR existing functions, assuming match_tbl is already prepared
@@ -182,12 +146,10 @@ bootstrap_compare <- function(config_path) {
     dirname(normalizePath(sys.frame(1)$ofile)),
     error = function(e) getwd()
   )
-  source_compare_tts_functions_only(file.path(script_dir, "compare_tts_2.r"))
+  source_compare_tts_functions_only(file.path(script_dir, "compare_tts.r"))
 
   # Fill in event_match_files automatically (latest per pilot)
-  #match_files <- find_latest_match_files(config)
-
-  match_files <- get_match_files(config)
+  match_files <- find_latest_match_files(config)
 
   # Create a config object compatible with your original functions
   config2 <- config

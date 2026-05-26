@@ -1,0 +1,37 @@
+{
+  "man_loc": "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/updated_man_v2/",
+  "ref_locs": [
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/DeepSeek_R1/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/DeepSeek_V3.2/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/glm5/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/gptoss120b/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/kimik2_instruct/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/mistral4small/",
+    "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/llm_multimodal_annotations_with_flags/qwen35/"
+
+  ],
+  "pilot_names": [
+    "DSR1",
+    "DSv32",
+    "GLM5",
+    "GPT-OSS-120B",
+    "Kimik2-Instruct",
+    "Mistral-4-Small",
+    "Qwen-3.5"
+  ],
+  "man_suffix": ".csv",
+  "ref_suffix": ".csv",
+  "event_match": true,
+  "use_lap": true,
+  "out": {
+    "relfolder": "matches",
+    "folder": "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/compare_outputs_multistep_v2_multimodal_lapjv/",
+    "event_out_locs": "/mnt/c/Research/textual-tabular-alignment/Shahriar_TTA/multistep_LLM_TTS/compare_outputs_multistep_v2_multimodal_lapjv/event_outputs/"
+  },
+  "distance": {
+    "method": "embedding_cosine",
+    "threshold": 0.1
+  },
+  "event_match_files": [
+  ]
+}
