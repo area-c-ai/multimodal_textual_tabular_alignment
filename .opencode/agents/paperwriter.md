@@ -74,7 +74,7 @@ change. Read notebooks with the read tool (large JSON).
 1. **Methodology pillars (cite each):**
    - **Data:** nurse shift summaries from the OMOP `note` table
      (`note_source_value = 'Shift Summary'`), exported to `.txt` with a
-     manifest (`data/shift_summaries/manifest.csv`).
+      manifest (`comparison/data/manifest.csv`).
    - **Pipeline:** text-only multistep decomposition; name the five stages and
      the BSV output contract; note prompt/time-zero conventions and the
      `--omit_tags think` requirement.

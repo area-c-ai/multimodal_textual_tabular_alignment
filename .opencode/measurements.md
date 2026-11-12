@@ -7,10 +7,10 @@ Do not invent numbers; every reported value must trace to an artifact.
 ## Definitions
 
 - **Data reality:** nurse shift summaries are OMOP rows in `cdm_synthea.note`
-  with `note_source_value = 'Shift Summary'`. They are exported to
-  `data/shift_summaries/*.txt` with `manifest.csv`. The exported count and
-  per-note character lengths are read from that manifest at analysis time,
-  never hardcoded.
+  with `note_source_value = 'Shift Summary'`. They are exported by
+  `comparison/export_shift_summaries.py` to `comparison/data/*.txt` with
+  `manifest.csv`. The exported count and per-note character lengths are read
+  from that manifest at analysis time, never hardcoded.
 - **Case unit:** one shift-summary note (one `.txt` → one run folder → one
   `timeline.json`).
 - **Time unit:** hours, relative to time zero. Prompts are upstream discharge-
@@ -51,8 +51,10 @@ state that the quantitative comparison is pending until they do.
 
 ## Output artifacts
 
-- `data/shift_summaries/manifest.csv` — export inventory (note_id, person_id,
-  visit_occurrence_id, note_date, note_datetime, filename, char_length).
-- `outputs/<run>/<case>/*.json` — per-case pipeline stages and `timeline.json`.
+- `comparison/data/manifest.csv` — export inventory (note_id, person_id,
+  visit_occurrence_id, visit_start_datetime, visit_end_datetime, note_date,
+  note_datetime, note_title, filename, char_length, has_html).
+- `comparison/outputs/<run>/note_<id>/*.json` — per-case pipeline stages and
+  `timeline.json`.
 - `compare_tts` matched-event CSVs and diagnostic plots (once references
   exist).

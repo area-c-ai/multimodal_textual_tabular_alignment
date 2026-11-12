@@ -23,12 +23,12 @@ database/export (`db`), or docs (`docs`).
   tool; it is large JSON).
 
 ## Mental model
-- Pipeline outputs live under the `--log_folder` chosen per run (by convention
-  `outputs/<run>/<case>/`). Each case has the stage JSONs; the final artifact
-  is `timeline.json`, a list of `[event, hours]` pairs.
-- The export manifest (`data/shift_summaries/manifest.csv`) joins filenames
-  back to `note_id`/`person_id`/`note_datetime` — use it when aggregating or
-  comparing across projects.
+- Pipeline outputs live under the `--log_folder` chosen per run; wrapper runs
+  write `comparison/outputs/<run>/note_<id>/`. Each case has the stage JSONs;
+  the final artifact is `timeline.json`, a list of `[event, hours]` pairs.
+- The export manifest (`comparison/data/manifest.csv`) joins filenames back to
+  `note_id`/`person_id`/`note_datetime`/visit window — use it when aggregating
+  or comparing across projects.
 - `compare_tts/` compares predicted timelines against **manual reference**
   annotations (`.bsv`), using embedding-based event matching and an R stack.
   It cannot run until reference timelines exist for the shift summaries.

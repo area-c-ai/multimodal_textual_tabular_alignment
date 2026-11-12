@@ -21,6 +21,8 @@ Do not drift into the database/export work (`db`), notebook analysis
 - `langgraph_scripts/README.md` — multimodal workflow, ablations, local-path
   configuration, output files.
 - `unimodal/run_langgraph.sh` — example invocations.
+- `comparison/README.md` — the shift-summary baseline workspace (export,
+  local vLLM auth proxy, run wrapper).
 
 ## Mental model
 - **Text-only multistep (works today):** `extract_central_events` →
@@ -40,7 +42,10 @@ Do not drift into the database/export work (`db`), notebook analysis
 - **LLM invocation:** either `--llm_endpoint <url>` (POSTs to
   `{url}/v1/chat/completions`, requires `--model_basename`) or a local GGUF
   via `LlamaCpp` (`--model_path`). The endpoint must speak the OpenAI chat
-  API — an Agent Service that only exposes `/agents` will not work.
+  API — an Agent Service that only exposes `/agents` will not work. The
+  runner sends **no `Authorization` header and no `model` field**, so the
+  owner's vLLM server is reached only through `comparison/vllm_proxy.py`
+  (local, injects both plus `chat_template_kwargs.enable_thinking=false`).
 - **Prompt loading:** `self.template_dir = "templates"` is relative to the
   current working directory. `unimodal/templates/` exists; `prompt_templates/`
   is the canonical source. Run from `unimodal/` or create a
@@ -63,13 +68,31 @@ Do not drift into the database/export work (`db`), notebook analysis
   ablation" claim does not match the code.
 
 ## Running (text-only)
+
+Preferred — the `comparison/` wrapper (starts the local auth proxy, one
+runner call per note, resume-safe; `--check` is offline, `--dry-run` prints
+only):
+
+```bash
+bash comparison/run_text_only.sh --check
+bash comparison/run_text_only.sh --note note_12406        # smoke case
+bash comparison/run_text_only.sh --all --run-name baseline_v1
+```
+
+Direct invocation (CWD must be `unimodal/` for `templates/`; endpoint must
+already speak auth-less OpenAI chat-completions, i.e. the local proxy — and
+use one `--log_folder` per note, because a directory run reuses a single
+folder and skips everything after the first note):
+
 ```bash
 cd unimodal
 python langgraph_runner_unimodal.py \
-  --summary_directory ../data/shift_summaries \
-  --llm_endpoint http://127.0.0.1:<port> --model_basename <model> \
-  --log_folder ../outputs/<run> --omit_tags think --n_retries 3
+  --summary_file ../comparison/data/note_12406.txt \
+  --llm_endpoint http://127.0.0.1:18001 --model_basename qwen3.8-27b \
+  --log_folder ../comparison/outputs/<run>/note_12406 \
+  --omit_tags think --n_retries 3
 ```
+
 Dependencies for this path: `langchain-community`, `langchain-core`,
 `requests` (no torch/CUDA).
 

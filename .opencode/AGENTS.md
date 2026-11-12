@@ -49,10 +49,12 @@ reproducible.
   credentials. The database reference is `omop-database-structure.md` when
   present.
 - The known local instance is Postgres on `localhost:54320` (user `postgres`,
-  schema `cdm_synthea`). Treat connection info as owner-local and verify it
-  against `data.md`; do not hardcode public IPs.
+  database `OHDSI-CDM_V54`, schema `cdm_synthea`). Treat connection info as
+  owner-local and verify it against `data.md`; do not hardcode public IPs.
 - **Shift summaries must be exported to `.txt`** (one file per note) before
-  the TTA runners can read them. The export path is planned; see § 6 and
+  the TTA runners can read them. Export with
+  `comparison/export_shift_summaries.py` (notes + manifest land in
+  `comparison/data/`, gitignored); see `comparison/README.md` and
   `.opencode/tests/shift-summaries-text-only.md`.
 - **No structured EHR calibration yet.** This fork does not ship MIMIC
   structured tables, and the owner has not yet defined a structured source
@@ -79,7 +81,8 @@ reproducible.
 | Path | Role |
 |---|---|
 | `README.md` | Upstream paper README: method, workflow, quick start, data caveats. |
-| `unimodal/` | **Text-only multistep runner** (`langgraph_runner_unimodal.py`), its `templates/`, `run_langgraph.sh`, `requirements.txt`. The current runnable path. |
+| `unimodal/` | **Text-only multistep runner** (`langgraph_runner_unimodal.py`), its `templates/`, `run_langgraph.sh`, `requirements.txt`. The current runnable path. Upstream, unmodified. |
+| `comparison/` | **Shift-summary baseline workspace:** export script, local vLLM auth proxy (`vllm_proxy.py`), run wrapper (`run_text_only.sh`), `data/` (notes + manifest) and `outputs/` (runs) — both gitignored. |
 | `prompt_templates/` | Canonical prompt templates for every workflow node (+ `README.md`). `unimodal/templates/` is a copy of the 5 text-only ones. |
 | `langgraph_scripts/` | Full multimodal runners, ablations, single-step runner, `mimic_struct_utils.py` (structured retrieval), `create_structured_timeline.py`, Slurm/server launchers. **Import-broken as forked** — see `pipeline` subagent. |
 | `compare_tts/` | R/Python evaluation of predicted vs manual timelines (event matching, concordance, log-time discrepancy/AULTC). |
@@ -143,6 +146,7 @@ subagent except `git_resolver`.
 ## 8. Status
 
 Fork used as a text-only comparison baseline. The `unimodal/` multistep
-pipeline is runnable today; the shift-summary export from the OMOP `note`
-table and the multimodal/structured path are planned. Upstream release code
-is otherwise unmodified.
+pipeline is runnable today and the shift-summary export is done
+(`comparison/`, 347 notes); the multimodal/structured path is planned.
+Upstream release code is otherwise unmodified; recorded deviations live in
+`comparison/README.md`.

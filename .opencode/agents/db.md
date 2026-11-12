@@ -35,21 +35,24 @@ rows for multimodal calibration. Do not drift into the pipeline runners
   plus a `manifest.csv`. The runner does not need IDs, but the manifest must,
   so results can be joined back to `note_id`/`person_id` for comparison.
 - The known local instance is Postgres on `localhost:54320` (user `postgres`,
-  schema `cdm_synthea`). `data.md` is authoritative; never trust hardcoded
-  public IPs.
+  database `OHDSI-CDM_V54`, schema `cdm_synthea`). `data.md` is authoritative;
+  never trust hardcoded public IPs.
 
-## Export contract (planned script)
-- Query the shift-summary rows (with `--limit` for a smoke run).
-- Write `data/shift_summaries/note_<note_id>.txt` (UTF-8; preserve note text
-  verbatim — no clinical editing).
-- Write `data/shift_summaries/manifest.csv` with at least: `note_id`,
-  `person_id`, `visit_occurrence_id`, `note_date`, `note_datetime`,
-  `filename`, `char_length`.
+## Export contract (implemented: `comparison/export_shift_summaries.py`)
+- Query the shift-summary rows (`--limit` for a smoke run), joined to a
+  per-`visit_occurrence_id` collapse of `visit_occurrence` (that table holds
+  duplicate identical rows per visit — a plain join doubles the note rows).
+- Write `comparison/data/note_<note_id>.txt` (UTF-8; preserve note text
+  verbatim — no clinical editing; `--strip-html` to clean tags instead).
+- Write `comparison/data/manifest.csv` with: `note_id`, `person_id`,
+  `visit_occurrence_id`, `visit_start_datetime`, `visit_end_datetime`,
+  `note_date`, `note_datetime`, `note_title`, `filename`, `char_length`,
+  `has_html`.
 - Handle empty/NULL `note_text` and HTML-wrapped text explicitly; report
   counts of skipped rows.
-- Use `psycopg2-binary` (no build; plain `psycopg2` needs `pg_config`).
-  psycopg2 returns DATE columns as Python `date` — wrap with `pd.to_datetime`
-  before `.dt`.
+- Use `psycopg2-binary` (no build; plain `psycopg2` needs `pg_config`);
+  connection via CLI flags with `PG*` env fallbacks. psycopg2 returns DATE
+  columns as Python `date` — wrap with `pd.to_datetime` before `.dt`.
 - Keep queries bounded (the exporter is a batch job, but a smoke run should
   never scan unbounded row sets without a limit).
 
