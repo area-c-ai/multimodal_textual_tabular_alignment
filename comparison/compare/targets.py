@@ -1,8 +1,9 @@
 """Map TTA timeline events to the owner's target events.
 
-In scope for now: admission, separation attempt, and weaning. The keyword
-tables are intentionally plain and editable from the notebook; the caller
-maps each concept to the reference table's event name (e.g. ``visit_start``).
+In scope for now: admission, separation attempt, weaning, and the extubation
+plan. The keyword tables are intentionally plain and editable from the
+notebook; the caller maps each concept to the reference table's event name
+(e.g. ``visit_start``).
 """
 
 from __future__ import annotations
@@ -64,6 +65,38 @@ CONCEPTS = {
             "consider weaning",
         ],
     },
+    # A plan is not the act: past-tense ("extubated") and refusal phrasings
+    # ("not for extubation") are penalised strongly so they score below the
+    # default threshold.
+    "extubation_plan": {
+        "keywords": [
+            "extubation plan",
+            "plan to extubate",
+            "plan for extubation",
+            "planned extubation",
+            "planned to extubate",
+            "aim for extubation",
+            "aim of extubation",
+            "for extubation",
+            "weaning plan",
+            "plan to wean",
+            "plan of weaning",
+            "planned to wean",
+            "plan: to wean",
+            "agreed to wean",
+            "happy to extubate",
+            "consider extubation",
+            "consider weaning",
+        ],
+        "negative": [
+            "not for extubation",
+            "no extubation",
+            "extubated",
+            "weaned",
+            "already extubated",
+        ],
+        "negative_penalty": 0.9,
+    },
 }
 
 
@@ -72,10 +105,11 @@ def score_text(text: str, concept: dict) -> tuple[float, str]:
 
     Args:
         text: TTA event string.
-        concept: One entry of ``CONCEPTS`` (``keywords``/``negative``).
+        concept: One entry of ``CONCEPTS`` (``keywords``/``negative``, and
+            optionally ``negative_penalty``, default 0.35).
     Returns:
-        ``(score, matched_keyword)``; the score is 0..1, reduced by 0.35 when
-        a negative phrase is present.
+        ``(score, matched_keyword)``; the score is 0..1, reduced by the
+        concept's negative penalty when a negative phrase is present.
     """
     normalized = normalize_text(text)
     best, best_keyword = 0.0, ""
@@ -86,7 +120,11 @@ def score_text(text: str, concept: dict) -> tuple[float, str]:
         score = 1.0 if key in normalized else similarity(text, keyword) * 0.9
         if score > best:
             best, best_keyword = score, keyword
-    penalty = 0.35 if any(normalize_text(neg) in normalized for neg in concept["negative"]) else 0.0
+    penalty = (
+        float(concept.get("negative_penalty", 0.35))
+        if any(normalize_text(neg) in normalized for neg in concept["negative"])
+        else 0.0
+    )
     return max(0.0, best - penalty), best_keyword
 
 

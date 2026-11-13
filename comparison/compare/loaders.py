@@ -76,6 +76,7 @@ def load_structured_wide(
     events: list[str],
     patient_col: str = "person_id",
     dayfirst: bool = True,
+    format: str | None = None,
 ) -> pd.DataFrame:
     """Load a wide structured table (one column per event) into long format.
 
@@ -84,6 +85,8 @@ def load_structured_wide(
         events: Event columns to read.
         patient_col: Patient identifier column.
         dayfirst: Parse ambiguous dates day-first (structured table convention).
+        format: Explicit pandas datetime format (e.g. ``"ISO8601"``); takes
+            precedence over ``dayfirst`` for unambiguous ISO files.
     Returns:
         Long DataFrame with ``patient_id``, ``source="structured"``, ``event``
         and ``time``; blanks and the 1970 epoch placeholder are dropped.
@@ -94,7 +97,7 @@ def load_structured_wide(
     for column in events:
         if column not in frame.columns:
             continue
-        parsed = pd.to_datetime(frame[column], errors="coerce", dayfirst=dayfirst)
+        parsed = pd.to_datetime(frame[column], errors="coerce", dayfirst=dayfirst, format=format)
         for patient_id, value in zip(frame[patient_col], parsed):
             if pd.isna(patient_id) or pd.isna(value) or value.year <= 1970:
                 continue

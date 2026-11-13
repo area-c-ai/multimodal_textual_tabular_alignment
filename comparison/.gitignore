@@ -1,4 +1,6 @@
 .env
 data/
 outputs/
+out/
 __pycache__/
+

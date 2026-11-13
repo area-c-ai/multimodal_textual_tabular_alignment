@@ -14,6 +14,9 @@ comparison baseline against the owner's own project.
 | `run_text_only.sh` | One-command wrapper: proxy + per-note unimodal runs with resume. |
 | `data/` | Exported notes + `manifest.csv` (gitignored). |
 | `outputs/` | Run results: `outputs/<run>/<note_id>/*.json` (gitignored). |
+| `compare/` | Comparison notebook + modules (`compare_tta.ipynb`). |
+| `out/` | Comparison results written by the notebook (gitignored). |
+| `requirements.txt` | Python deps for export + comparison notebook. |
 | `.env.example` | Non-secret template for `.env` (gitignored). |
 
 ## Setup
@@ -60,6 +63,38 @@ is safe: finished notes are skipped via the runner's own output check.
 Each note produces `central_events.json`, `time_distances.json`,
 `central_timeline.json`, `non_central_events.json`, `timeline.json`
 (`[event, hours]` pairs) under `outputs/<run>/note_<id>/`.
+
+## Comparison notebook
+
+`compare/compare_tta.ipynb` turns a finished run into an absolute-time
+comparison against the owner's curated timestamps (default:
+`table6_weaning.csv`, `source = "structured"`, events
+`visit_start` / `first_low_support_time` / `first_weaning`):
+
+1. anchor each note's hour axis (owner's clock-resolved `event_nodes` first,
+   the note's own clock lines otherwise),
+2. match TTA events to the target concepts, with a candidate-review table
+   and manual `OVERRIDES`,
+3. compute `diff = TTA − reference` in minutes with the same definitions as
+   the owner's `weaning_event/time_difference_findings.md`.
+
+```bash
+pip install -r comparison/requirements.txt   # if not using the TTA conda env
+jupyter lab comparison/compare/compare_tta.ipynb
+```
+
+A second reference (section 10 of the notebook) compares the same run
+against the owner's LLM-evaluation answers
+(`Evluating_llms/results/investigate_extubation_output/all_answers_33.csv`)
+on `first_imv_end` / `first_weaning` / `extubation_plan`. The final
+`tta_vs_reference.csv` / `..._summary.csv` combine both references,
+labelled by the `source` column (`structured` / `chained`).
+
+All thresholds/paths are editable in the notebook's **Parameters** cell.
+Results (incl. `all_event_decisions_tta.csv` in the owner's
+`all_event_decisions` schema) go to `comparison/out/`. See
+`compare/README.md` for details and caveats (e.g. `table6_weaning.csv`
+has no `visit_start`).
 
 ## Deviations from upstream (recorded)
 
