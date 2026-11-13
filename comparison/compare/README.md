@@ -39,7 +39,7 @@ in the **Parameters** cell (overridable via `TTA_REFERENCE_CSV` /
    difference, p90, tolerance bands — same definitions as the owner's
    `weaning_event/time_difference_findings.md`.
 6. **Second reference (section 10)** — the owner's LLM-evaluation answers
-   (`all_answers_33.csv`, wide, ISO timestamps, `"Non present"` sentinel)
+   (`all_answers_36.csv`, wide, ISO timestamps, `"Non present"` sentinel)
    compared on `first_imv_end` / `first_weaning` / `extubation_plan` via
    `separation_attempt` / `weaning` / `extubation_plan`. The write step
    combines both references into the final `tta_vs_reference.csv` /
@@ -63,13 +63,13 @@ in the **Parameters** cell (overridable via `TTA_REFERENCE_CSV` /
 
 | File | Content |
 |---|---|
-| `tta_vs_reference.csv` | per (patient, event) and `source`: ref/tta time, `diff_min`. Final version combines both references: `structured` (table6) + `chained` (`all_answers_33.csv`); section 9 writes the structured-only version first |
+| `tta_vs_reference.csv` | per (patient, event) and `source`: ref/tta time, `diff_min`. Final version combines both references: `structured` (table6) + `chained` (`all_answers_36.csv`); section 9 writes the structured-only version first |
 | `tta_vs_reference_summary.csv` | per (source, event) counts, medians, tolerance % |
 | `tta_targets.csv` | resolved TTA targets (incl. `MISSING` rows) |
 | `tta_anchor_estimates.csv` | per-note origin, MAD, source, stability |
 | `all_event_decisions_tta.csv` | owner's `all_event_decisions` schema (`run_id` = TTA run name) |
-| `tta_vs_extubation_answers.csv` | same, vs `all_answers_33.csv` |
-| `tta_vs_extubation_answers_summary.csv` | per-event summary vs `all_answers_33.csv` |
+| `tta_vs_extubation_answers.csv` | same, vs `all_answers_36.csv` |
+| `tta_vs_extubation_answers_summary.csv` | per-event summary vs `all_answers_36.csv` |
 | `all_event_decisions_tta_extubation.csv` | `all_event_decisions` schema for the extubation-answers comparison |
 | `tta_time_difference.png` | figure: median diff vs. structured, per event + pooled, TTA / chained / raw notes |
 
@@ -82,7 +82,7 @@ in the **Parameters** cell (overridable via `TTA_REFERENCE_CSV` /
 - TTA's time zero follows the upstream prompts (admission if stated, else
   case presentation); the anchor step estimates it per note and reports the
   residual, so check `tta_anchor_estimates.csv` before trusting differences.
-- `all_answers_33.csv` is parsed with `format="ISO8601"` (never `dayfirst`,
+- `all_answers_36.csv` is parsed with `format="ISO8601"` (never `dayfirst`,
   which swaps day/month in ISO strings); `"Non present"` becomes NaT.
 - `separation_attempt ↔ first_imv_end` is the closest TTA concept, not an
   identity (low support ≠ end of IMV); "wean" can also mean drug weaning

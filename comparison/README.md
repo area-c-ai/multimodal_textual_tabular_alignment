@@ -85,7 +85,7 @@ jupyter lab comparison/compare/compare_tta.ipynb
 
 A second reference (section 10 of the notebook) compares the same run
 against the owner's LLM-evaluation answers
-(`Evluating_llms/results/investigate_extubation_output/all_answers_33.csv`)
+(`Evluating_llms/results/investigate_extubation_output/all_answers_36.csv`)
 on `first_imv_end` / `first_weaning` / `extubation_plan`. The final
 `tta_vs_reference.csv` / `..._summary.csv` combine both references,
 labelled by the `source` column (`structured` / `chained`).
