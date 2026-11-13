@@ -3,4 +3,5 @@
 psycopg2-binary>=2.9   # export_shift_summaries.py (database export)
 pandas>=2.0            # compare/ modules and the notebook
 matplotlib>=3.7        # notebook plots
+seaborn>=0.12          # section-11 time-difference figure
 jupyterlab>=4          # to run compare/compare_tta.ipynb

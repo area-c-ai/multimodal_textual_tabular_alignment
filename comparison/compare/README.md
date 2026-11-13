@@ -44,6 +44,10 @@ in the **Parameters** cell (overridable via `TTA_REFERENCE_CSV` /
    `separation_attempt` / `weaning` / `extubation_plan`. The write step
    combines both references into the final `tta_vs_reference.csv` /
    `..._summary.csv`, one block per `source` (`structured`, `chained`).
+7. **Figure (section 11)** — median `diff = system − structured` per event
+   and pooled, for TTA / chained / raw notes (table6 `source="notes"`),
+   saved to `out/tta_time_difference.png` (style of the owner's
+   `last_ML_run_report.ipynb`).
 
 ## Modules (pure pandas + stdlib)
 
@@ -67,6 +71,7 @@ in the **Parameters** cell (overridable via `TTA_REFERENCE_CSV` /
 | `tta_vs_extubation_answers.csv` | same, vs `all_answers_33.csv` |
 | `tta_vs_extubation_answers_summary.csv` | per-event summary vs `all_answers_33.csv` |
 | `all_event_decisions_tta_extubation.csv` | `all_event_decisions` schema for the extubation-answers comparison |
+| `tta_time_difference.png` | figure: median diff vs. structured, per event + pooled, TTA / chained / raw notes |
 
 ## Caveats
 
